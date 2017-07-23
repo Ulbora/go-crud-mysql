@@ -3,6 +3,7 @@ package mysqldb
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -10,6 +11,7 @@ import (
 var res bool
 var testDb *sql.DB
 var insertID int64
+var insertID2 int64
 
 func TestInitialize(t *testing.T) {
 	res = InitializeMysql("localhost:3306", "admin", "admin", "ulbora_content_service")
@@ -44,8 +46,103 @@ func TestInsert(t *testing.T) {
 		fmt.Println("database insert failed")
 		t.Fail()
 	}
+
+	success, insID2 := Insert(noTx, q, a...)
+	if success == true && insID2 != -1 {
+		insertID2 = insID2
+		fmt.Print("new Id: ")
+		fmt.Println(insID2)
+	} else {
+		fmt.Println("database insert failed")
+		t.Fail()
+	}
 }
 
+func TestUpdate(t *testing.T) {
+	var noTx *sql.DB
+	var q = "UPDATE content set title = ?, modified_date = ?, text = ? where id = ? and client_id = ? "
+	//var a []interface{}
+	//a = append(a, "test insert 2", time.Now(), "some content text", 125)
+	a := []interface{}{"test insert update", time.Now(), "some content new text updated", insertID, 125}
+	success := Update(noTx, q, a...)
+	if success == true {
+		fmt.Println("database update success")
+	} else {
+		fmt.Println("database update failed")
+		t.Fail()
+	}
+}
+
+func TestGet(t *testing.T) {
+	a := []interface{}{insertID, 125}
+	var q = "select * from content WHERE id = ? and client_id = ?"
+	rowPtr := Get(q, a...)
+	if rowPtr != nil {
+		fmt.Print("columns")
+		fmt.Println(rowPtr.columns)
+		foundRow := rowPtr.row
+		//fmt.Print("Get ")
+		//fmt.Println(foundRow)
+		fmt.Println("Get results: --------------------------")
+		int64Val, err2 := strconv.ParseInt(foundRow[0], 10, 0)
+		if err2 != nil {
+			fmt.Print(err2)
+		}
+		if insertID != int64Val {
+			fmt.Print(insertID)
+			fmt.Print(" != ")
+			fmt.Println(int64Val)
+			t.Fail()
+		}
+	} else {
+		fmt.Println("database getRow failed")
+		t.Fail()
+	}
+}
+
+func TestGetList(t *testing.T) {
+	a := []interface{}{125}
+	var q = "select * from content WHERE client_id = ? order by id"
+	rowsPtr := GetList(q, a...)
+	if rowsPtr != nil {
+		fmt.Print("columns")
+		fmt.Println(rowsPtr.columns)
+		foundRows := rowsPtr.rows
+		//fmt.Print("GetList ")
+		//fmt.Println(foundRows)
+		fmt.Println("GetList results: --------------------------")
+		for r := range foundRows {
+			foundRow := foundRows[r]
+			for c := range foundRow {
+				if c == 0 {
+					int64Val, err2 := strconv.ParseInt(foundRow[c], 10, 0)
+					if err2 != nil {
+						fmt.Print(err2)
+					}
+					if r == 0 {
+						if insertID != int64Val {
+							fmt.Print(insertID)
+							fmt.Print(" != ")
+							fmt.Println(int64Val)
+							t.Fail()
+						}
+					} else if r == 1 {
+						if insertID2 != int64Val {
+							fmt.Print(insertID)
+							fmt.Print(" != ")
+							fmt.Println(int64Val)
+							t.Fail()
+						}
+					}
+				}
+				//fmt.Println(string(foundRow[c]))
+			}
+		}
+	} else {
+		fmt.Println("database getRow failed")
+		t.Fail()
+	}
+}
 func TestDelete(t *testing.T) {
 	var noTx *sql.DB
 	var q = "DELETE FROM content WHERE id = ? "
@@ -53,6 +150,15 @@ func TestDelete(t *testing.T) {
 	if success == true {
 		fmt.Print("Deleted ")
 		fmt.Println(insertID)
+	} else {
+		fmt.Println("database insert failed")
+		t.Fail()
+	}
+
+	success2 := Delete(noTx, q, insertID2)
+	if success2 == true {
+		fmt.Print("Deleted ")
+		fmt.Println(insertID2)
 	} else {
 		fmt.Println("database insert failed")
 		t.Fail()
