@@ -12,6 +12,7 @@ var res bool
 var testDb *sql.DB
 var insertID int64
 var insertID2 int64
+var insertID3 int64
 
 func TestInitialize(t *testing.T) {
 	res = InitializeMysql("localhost:3306", "admin", "admin", "ulbora_content_service")
@@ -32,7 +33,7 @@ func TestGetDb(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-	var noTx *sql.DB
+	var noTx *sql.Tx
 	var q = "INSERT INTO content (title, created_date, text, client_id) VALUES (?, ?, ?, ?)"
 	var a []interface{}
 	a = append(a, "test insert 2", time.Now(), "some content text", 125)
@@ -164,6 +165,33 @@ func TestDelete(t *testing.T) {
 		t.Fail()
 	}
 }
+
+// func TestInsertTx(t *testing.T) {
+// 	db := GetDb()
+// 	var q = "INSERT INTO content (title, created_date, text, client_id) VALUES (?, ?, ?, ?)"
+// 	var a []interface{}
+// 	a = append(a, "test insert with tx", time.Now(), "some content text", 125)
+// 	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
+// 	tx, err := db.Begin()
+// 	if err != nil {
+// 		panic(err.Error()) // proper error handling instead of panic in your app
+// 	}
+// 	Insert(tx, q, a...)
+// 	success, insID := Insert(tx, q, a...)
+// 	if success == true && insID != -1 {
+// 		txErr := tx.Rollback()
+// 		if txErr != nil {
+// 			fmt.Println(txErr)
+// 		}
+// 		insertID3 = insID
+// 		fmt.Print("new Id with tx: ")
+// 		fmt.Println(insID)
+// 	} else {
+// 		fmt.Println("database insert failed")
+// 		t.Fail()
+// 	}
+
+// }
 func TestClose(t *testing.T) {
 	if res == true {
 		rtn := Close()

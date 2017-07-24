@@ -52,16 +52,17 @@ func GetDb() *sql.DB {
 }
 
 //Insert inserts a row. Passing in tx allows for transactions
-func Insert(tx *sql.DB, query string, args ...interface{}) (bool, int64) {
+func Insert(tx *sql.Tx, query string, args ...interface{}) (bool, int64) {
 	var success = false
 	var id int64 = -1
-	var dbToUse *sql.DB
+	var stmtIns *sql.Stmt
 	if tx != nil {
-		dbToUse = tx
+		fmt.Println("Using tx")
+		stmtIns, err = tx.Prepare(query)
 	} else {
-		dbToUse = db
+		stmtIns, err = db.Prepare(query)
 	}
-	stmtIns, err := dbToUse.Prepare(query)
+
 	if err != nil {
 		panic(err.Error()) // proper error handling instead of panic in your app
 	}
@@ -80,6 +81,7 @@ func Insert(tx *sql.DB, query string, args ...interface{}) (bool, int64) {
 			success = true
 		}
 	}
+
 	return success, id
 }
 
