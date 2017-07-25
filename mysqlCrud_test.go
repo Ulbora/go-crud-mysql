@@ -13,6 +13,7 @@ var testDb *sql.DB
 var insertID int64
 var insertID2 int64
 var insertID3 int64
+var insertID4 int64
 
 func TestInitialize(t *testing.T) {
 	res = InitializeMysql("localhost:3306", "admin", "admin", "ulbora_content_service")
@@ -60,7 +61,7 @@ func TestInsert(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	var noTx *sql.DB
+	var noTx *sql.Tx
 	var q = "UPDATE content set title = ?, modified_date = ?, text = ? where id = ? and client_id = ? "
 	//var a []interface{}
 	//a = append(a, "test insert 2", time.Now(), "some content text", 125)
@@ -79,12 +80,12 @@ func TestGet(t *testing.T) {
 	var q = "select * from content WHERE id = ? and client_id = ?"
 	rowPtr := Get(q, a...)
 	if rowPtr != nil {
-		fmt.Print("columns")
-		fmt.Println(rowPtr.columns)
+		//fmt.Print("columns")
+		//fmt.Println(rowPtr.columns)
 		foundRow := rowPtr.row
 		//fmt.Print("Get ")
 		//fmt.Println(foundRow)
-		fmt.Println("Get results: --------------------------")
+		//fmt.Println("Get results: --------------------------")
 		int64Val, err2 := strconv.ParseInt(foundRow[0], 10, 0)
 		if err2 != nil {
 			fmt.Print(err2)
@@ -106,12 +107,12 @@ func TestGetList(t *testing.T) {
 	var q = "select * from content WHERE client_id = ? order by id"
 	rowsPtr := GetList(q, a...)
 	if rowsPtr != nil {
-		fmt.Print("columns")
-		fmt.Println(rowsPtr.columns)
+		//fmt.Print("columns")
+		//fmt.Println(rowsPtr.columns)
 		foundRows := rowsPtr.rows
 		//fmt.Print("GetList ")
 		//fmt.Println(foundRows)
-		fmt.Println("GetList results: --------------------------")
+		//fmt.Println("GetList results: --------------------------")
 		for r := range foundRows {
 			foundRow := foundRows[r]
 			for c := range foundRow {
@@ -145,7 +146,7 @@ func TestGetList(t *testing.T) {
 	}
 }
 func TestDelete(t *testing.T) {
-	var noTx *sql.DB
+	var noTx *sql.Tx
 	var q = "DELETE FROM content WHERE id = ? "
 	success := Delete(noTx, q, insertID)
 	if success == true {
@@ -166,32 +167,60 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-// func TestInsertTx(t *testing.T) {
-// 	db := GetDb()
-// 	var q = "INSERT INTO content (title, created_date, text, client_id) VALUES (?, ?, ?, ?)"
-// 	var a []interface{}
-// 	a = append(a, "test insert with tx", time.Now(), "some content text", 125)
-// 	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
-// 	tx, err := db.Begin()
-// 	if err != nil {
-// 		panic(err.Error()) // proper error handling instead of panic in your app
-// 	}
-// 	Insert(tx, q, a...)
-// 	success, insID := Insert(tx, q, a...)
-// 	if success == true && insID != -1 {
-// 		txErr := tx.Rollback()
-// 		if txErr != nil {
-// 			fmt.Println(txErr)
-// 		}
-// 		insertID3 = insID
-// 		fmt.Print("new Id with tx: ")
-// 		fmt.Println(insID)
-// 	} else {
-// 		fmt.Println("database insert failed")
-// 		t.Fail()
-// 	}
+func TestInsertTx(t *testing.T) {
+	db := GetDb()
+	var success = false
+	var q = "INSERT INTO content (title, created_date, text, client_id) VALUES (?, ?, ?, ?)"
+	var a []interface{}
+	a = append(a, "test insert with tx", time.Now(), "some content text", 125)
+	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
+	tx, err := db.Begin()
+	if err != nil {
+		panic(err.Error()) // proper error handling instead of panic in your app
+	}
+	success1, insID1 := Insert(tx, q, a...)
+	success2, insID2 := Insert(tx, q, a...)
+	defer func() {
+		if success != true {
+			tx.Rollback()
+		} else {
+			err = tx.Commit()
+		}
+	}()
+	if success1 == true && insID1 != -1 && success2 == true && insID2 != -1 {
+		insertID3 = insID1
+		insertID4 = insID2
+		success = true
+		//fmt.Print("new Id with tx: ")
+		//fmt.Println(insID)
+	} else {
+		fmt.Println("database insert failed")
+		t.Fail()
+	}
 
-// }
+}
+
+func TestDeleteTx(t *testing.T) {
+	var noTx *sql.Tx
+	var q = "DELETE FROM content WHERE id = ? "
+	success := Delete(noTx, q, insertID3)
+	if success == true {
+		fmt.Print("Deleted ")
+		fmt.Println(insertID3)
+	} else {
+		fmt.Println("database insert failed")
+		t.Fail()
+	}
+
+	success2 := Delete(noTx, q, insertID4)
+	if success2 == true {
+		fmt.Print("Deleted ")
+		fmt.Println(insertID4)
+	} else {
+		fmt.Println("database insert failed")
+		t.Fail()
+	}
+}
 func TestClose(t *testing.T) {
 	if res == true {
 		rtn := Close()

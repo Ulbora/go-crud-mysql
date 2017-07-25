@@ -26,24 +26,18 @@ type DbRows struct {
 //InitializeMysql Mysql init to mysql
 func InitializeMysql(host, user, pw, dbName string) bool {
 	var rtn = false
-
 	var conStr = user + ":" + pw + "@tcp(" + host + ")/" + dbName
-	//var conStr = user + ":" + pw + "@/" + dbName
-	//fmt.Println("conStr: " + conStr)
-
-	//db, err := sql.Open("mysql", "user:password@/dbname")
 	db, err = sql.Open("mysql", conStr)
 	if err != nil {
-		panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
+		panic(err.Error())
 	}
 	err = db.Ping()
 	if err != nil {
-		panic(err.Error()) // proper error handling instead of panic in your app
+		panic(err.Error())
 	} else {
 		rtn = true
 	}
 	return rtn
-
 }
 
 //GetDb gets a pointer to db for transactions
@@ -61,13 +55,11 @@ func Insert(tx *sql.Tx, query string, args ...interface{}) (bool, int64) {
 		stmtIns, err = tx.Prepare(query)
 	} else {
 		stmtIns, err = db.Prepare(query)
+		defer stmtIns.Close()
 	}
-
 	if err != nil {
-		panic(err.Error()) // proper error handling instead of panic in your app
+		panic(err.Error())
 	}
-	defer stmtIns.Close()
-	//res, err := stmtIns.Exec("test", time.Now(), "test", 111)
 	res, err := stmtIns.Exec(args...)
 	if err != nil {
 		fmt.Println("Insert Exec err:", err.Error())
@@ -77,40 +69,35 @@ func Insert(tx *sql.Tx, query string, args ...interface{}) (bool, int64) {
 		if err != nil {
 			fmt.Println("Error:", err.Error())
 		} else {
-			//fmt.Println("LastInsertId:", id)
 			success = true
 		}
 	}
-
 	return success, id
 }
 
 //Update updates a row. Passing in tx allows for transactions
-func Update(tx *sql.DB, query string, args ...interface{}) bool {
+func Update(tx *sql.Tx, query string, args ...interface{}) bool {
 	var success = false
-	var dbToUse *sql.DB
+	var stmtUp *sql.Stmt
 	if tx != nil {
-		dbToUse = tx
+		fmt.Println("Using tx")
+		stmtUp, err = tx.Prepare(query)
 	} else {
-		dbToUse = db
+		stmtUp, err = db.Prepare(query)
+		defer stmtUp.Close()
 	}
-	stmtUp, err := dbToUse.Prepare(query)
 	if err != nil {
-		panic(err.Error()) // proper error handling instead of panic in your app
+		panic(err.Error())
 	}
-	defer stmtUp.Close()
-	//res, err := stmtIns.Exec("test", time.Now(), "test", 111)
 	res, err := stmtUp.Exec(args...)
 	if err != nil {
 		fmt.Println("Update Exec err:", err.Error())
 	} else {
 		fmt.Println("Update Exec success:")
 		affectedRows, err := res.RowsAffected()
-		//fmt.Println(affectedRows)
 		if err != nil && affectedRows == 0 {
 			fmt.Println("Error:", err.Error())
 		} else {
-			//fmt.Println("LastInsertId:", id)
 			success = true
 		}
 	}
@@ -126,7 +113,6 @@ func Get(query string, args ...interface{}) *DbRow {
 	}
 	defer stmtGet.Close()
 	rows, err := stmtGet.Query(args...)
-
 	defer rows.Close()
 	if err != nil {
 		fmt.Print("Get err: ")
@@ -154,13 +140,9 @@ func Get(query string, args ...interface{}) *DbRow {
 				} else {
 					value = string(col)
 				}
-				//fmt.Println(columns[i], ": ", value)
 				rtn.row = append(rtn.row, value)
 			}
-			//rtn.row = rowValues
 		}
-		//fmt.Print("rtn.row")
-		//fmt.Println(rtn.row)
 		if err = rows.Err(); err != nil {
 			panic(err.Error())
 		}
@@ -198,9 +180,6 @@ func GetList(query string, args ...interface{}) *DbRows {
 			if err != nil {
 				panic(err.Error())
 			}
-			//fmt.Print("len(rowValues:)")
-			//fmt.Println(len(rowValues))
-
 			for _, col := range rowValues {
 				var value string
 				if col == nil {
@@ -208,15 +187,10 @@ func GetList(query string, args ...interface{}) *DbRows {
 				} else {
 					value = string(col)
 				}
-				//fmt.Println(columns[i], ": ", value)
 				rowValuesStr = append(rowValuesStr, value)
 			}
-			//fmt.Print("rowValuesStr: ")
-			//fmt.Println(rowValuesStr)
 			rtn.rows = append(rtn.rows, rowValuesStr)
 		}
-		//fmt.Print("rtn.rows:")
-		//fmt.Println(rtn.rows)
 		if err = rows.Err(); err != nil {
 			panic(err.Error())
 		}
@@ -225,21 +199,20 @@ func GetList(query string, args ...interface{}) *DbRows {
 }
 
 //Delete deletes records
-func Delete(tx *sql.DB, query string, id int64) bool {
+func Delete(tx *sql.Tx, query string, id int64) bool {
 	var success = false
-	var dbToUse *sql.DB
+	var stmt *sql.Stmt
 	if tx != nil {
-		dbToUse = tx
+		fmt.Println("Using tx")
+		stmt, err = tx.Prepare(query)
 	} else {
-		dbToUse = db
+		stmt, err = db.Prepare(query)
+		defer stmt.Close()
 	}
-	stmtIns, err := dbToUse.Prepare(query)
 	if err != nil {
-		panic(err.Error()) // proper error handling instead of panic in your app
+		panic(err.Error())
 	}
-	defer stmtIns.Close()
-	//res, err := stmtIns.Exec("test", time.Now(), "test", 111)
-	res, err := stmtIns.Exec(id)
+	res, err := stmt.Exec(id)
 	if err != nil {
 		fmt.Println("Delete Exec err:", err.Error())
 	} else {
@@ -247,7 +220,6 @@ func Delete(tx *sql.DB, query string, id int64) bool {
 		if err != nil && affectedRows == 0 {
 			fmt.Println("Error:", err.Error())
 		} else {
-			//fmt.Println(affectedRows)
 			fmt.Println("Delete Exec success:")
 			success = true
 		}
