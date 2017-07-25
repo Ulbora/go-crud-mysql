@@ -19,8 +19,7 @@ type DbRow struct {
 //DbRows array of database rows
 type DbRows struct {
 	columns []string
-	//rows    [][]sql.RawBytes
-	rows [][]string
+	rows    [][]string
 }
 
 //InitializeMysql Mysql init to mysql
