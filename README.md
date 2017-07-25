@@ -7,9 +7,9 @@ Go Crud library for MySql
 
 ```
 res = InitializeMysql("localhost:3306", "admin", "admin", "some_database")	
-	if res != true {
-		// do something
-	}
+if res != true {
+	// do something
+}
 
 ```
 
