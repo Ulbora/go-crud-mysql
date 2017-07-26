@@ -3,7 +3,16 @@ go-crud-mysql
 
 Go Crud library for MySql
 
-## TestInitialize
+# Installation
+
+```
+$ go get github.com/Ulbora/go-crud-mysql
+
+```
+
+# Usage
+
+## InitializeMysql
 
 ```
 res = InitializeMysql("localhost:3306", "admin", "admin", "some_database")	
