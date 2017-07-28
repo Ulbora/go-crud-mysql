@@ -146,9 +146,11 @@ func TestGetList(t *testing.T) {
 	}
 }
 func TestDelete(t *testing.T) {
+	a := []interface{}{insertID}
+	a2 := []interface{}{insertID2}
 	var noTx *sql.Tx
 	var q = "DELETE FROM content WHERE id = ? "
-	success := Delete(noTx, q, insertID)
+	success := Delete(noTx, q, a...)
 	if success == true {
 		fmt.Print("Deleted ")
 		fmt.Println(insertID)
@@ -157,7 +159,7 @@ func TestDelete(t *testing.T) {
 		t.Fail()
 	}
 
-	success2 := Delete(noTx, q, insertID2)
+	success2 := Delete(noTx, q, a2...)
 	if success2 == true {
 		fmt.Print("Deleted ")
 		fmt.Println(insertID2)
@@ -201,9 +203,11 @@ func TestInsertTx(t *testing.T) {
 }
 
 func TestDeleteTx(t *testing.T) {
+	a3 := []interface{}{insertID3}
+	a4 := []interface{}{insertID4}
 	var noTx *sql.Tx
 	var q = "DELETE FROM content WHERE id = ? "
-	success := Delete(noTx, q, insertID3)
+	success := Delete(noTx, q, a3...)
 	if success == true {
 		fmt.Print("Deleted ")
 		fmt.Println(insertID3)
@@ -212,7 +216,7 @@ func TestDeleteTx(t *testing.T) {
 		t.Fail()
 	}
 
-	success2 := Delete(noTx, q, insertID4)
+	success2 := Delete(noTx, q, a4...)
 	if success2 == true {
 		fmt.Print("Deleted ")
 		fmt.Println(insertID4)

@@ -198,7 +198,7 @@ func GetList(query string, args ...interface{}) *DbRows {
 }
 
 //Delete deletes records
-func Delete(tx *sql.Tx, query string, id int64) bool {
+func Delete(tx *sql.Tx, query string, args ...interface{}) bool {
 	var success = false
 	var stmt *sql.Stmt
 	if tx != nil {
@@ -211,7 +211,7 @@ func Delete(tx *sql.Tx, query string, id int64) bool {
 	if err != nil {
 		panic(err.Error())
 	}
-	res, err := stmt.Exec(id)
+	res, err := stmt.Exec(args...)
 	if err != nil {
 		fmt.Println("Delete Exec err:", err.Error())
 	} else {
