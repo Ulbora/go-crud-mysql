@@ -82,7 +82,7 @@ func TestGet(t *testing.T) {
 	if rowPtr != nil {
 		//fmt.Print("columns")
 		//fmt.Println(rowPtr.columns)
-		foundRow := rowPtr.row
+		foundRow := rowPtr.Row
 		//fmt.Print("Get ")
 		//fmt.Println(foundRow)
 		//fmt.Println("Get results: --------------------------")
@@ -109,7 +109,7 @@ func TestGetList(t *testing.T) {
 	if rowsPtr != nil {
 		//fmt.Print("columns")
 		//fmt.Println(rowsPtr.columns)
-		foundRows := rowsPtr.rows
+		foundRows := rowsPtr.Rows
 		//fmt.Print("GetList ")
 		//fmt.Println(foundRows)
 		//fmt.Println("GetList results: --------------------------")

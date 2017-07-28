@@ -12,14 +12,14 @@ var err error
 
 //DbRow database row
 type DbRow struct {
-	columns []string
-	row     []string
+	Columns []string
+	Row     []string
 }
 
 //DbRows array of database rows
 type DbRows struct {
-	columns []string
-	rows    [][]string
+	Columns []string
+	Rows    [][]string
 }
 
 //InitializeMysql Mysql init to mysql
@@ -121,7 +121,7 @@ func Get(query string, args ...interface{}) *DbRow {
 		if err != nil {
 			panic(err.Error())
 		}
-		rtn.columns = columns
+		rtn.Columns = columns
 		rowValues := make([]sql.RawBytes, len(columns))
 		scanArgs := make([]interface{}, len(rowValues))
 		for i := range rowValues {
@@ -139,7 +139,7 @@ func Get(query string, args ...interface{}) *DbRow {
 				} else {
 					value = string(col)
 				}
-				rtn.row = append(rtn.row, value)
+				rtn.Row = append(rtn.Row, value)
 			}
 		}
 		if err = rows.Err(); err != nil {
@@ -167,7 +167,7 @@ func GetList(query string, args ...interface{}) *DbRows {
 		if err != nil {
 			panic(err.Error())
 		}
-		rtn.columns = columns
+		rtn.Columns = columns
 		rowValues := make([]sql.RawBytes, len(columns))
 		scanArgs := make([]interface{}, len(rowValues))
 		for i := range rowValues {
@@ -188,7 +188,7 @@ func GetList(query string, args ...interface{}) *DbRows {
 				}
 				rowValuesStr = append(rowValuesStr, value)
 			}
-			rtn.rows = append(rtn.rows, rowValuesStr)
+			rtn.Rows = append(rtn.Rows, rowValuesStr)
 		}
 		if err = rows.Err(); err != nil {
 			panic(err.Error())
