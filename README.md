@@ -84,3 +84,11 @@ var q = "DELETE FROM table WHERE id = ? "
 success := Delete(noTx, q, insertID)
 
 ```
+
+
+## Close Database
+
+```
+success := Close()
+
+```

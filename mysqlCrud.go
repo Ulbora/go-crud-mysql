@@ -54,11 +54,11 @@ func Insert(tx *sql.Tx, query string, args ...interface{}) (bool, int64) {
 		stmtIns, err = tx.Prepare(query)
 	} else {
 		stmtIns, err = db.Prepare(query)
-		defer stmtIns.Close()
 	}
 	if err != nil {
 		panic(err.Error())
 	}
+	defer stmtIns.Close()
 	res, err := stmtIns.Exec(args...)
 	if err != nil {
 		fmt.Println("Insert Exec err:", err.Error())
@@ -83,11 +83,11 @@ func Update(tx *sql.Tx, query string, args ...interface{}) bool {
 		stmtUp, err = tx.Prepare(query)
 	} else {
 		stmtUp, err = db.Prepare(query)
-		defer stmtUp.Close()
 	}
 	if err != nil {
 		panic(err.Error())
 	}
+	defer stmtUp.Close()
 	res, err := stmtUp.Exec(args...)
 	if err != nil {
 		fmt.Println("Update Exec err:", err.Error())
@@ -206,11 +206,11 @@ func Delete(tx *sql.Tx, query string, args ...interface{}) bool {
 		stmt, err = tx.Prepare(query)
 	} else {
 		stmt, err = db.Prepare(query)
-		defer stmt.Close()
 	}
 	if err != nil {
 		panic(err.Error())
 	}
+	defer stmt.Close()
 	res, err := stmt.Exec(args...)
 	if err != nil {
 		fmt.Println("Delete Exec err:", err.Error())
