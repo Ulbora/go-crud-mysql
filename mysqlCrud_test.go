@@ -35,9 +35,9 @@ func TestGetDb(t *testing.T) {
 
 func TestInsert(t *testing.T) {
 	var noTx *sql.Tx
-	var q = "INSERT INTO content (title, created_date, text, client_id) VALUES (?, ?, ?, ?)"
+	var q = "INSERT INTO content (title, category, created_date, text, client_id) VALUES (?, ?, ?, ?, ?)"
 	var a []interface{}
-	a = append(a, "test insert 2", time.Now(), "some content text", 125)
+	a = append(a, "test insert 2", "pageName", time.Now(), "some content text", 125)
 	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
 	success, insID := Insert(noTx, q, a...)
 	if success == true && insID != -1 {
@@ -148,6 +148,7 @@ func TestGetList(t *testing.T) {
 func TestDelete(t *testing.T) {
 	a := []interface{}{insertID}
 	a2 := []interface{}{insertID2}
+	a3 := []interface{}{insertID2}
 	var noTx *sql.Tx
 	var q = "DELETE FROM content WHERE id = ? "
 	success := Delete(noTx, q, a...)
@@ -167,14 +168,23 @@ func TestDelete(t *testing.T) {
 		fmt.Println("database insert failed")
 		t.Fail()
 	}
+
+	success3 := Delete(noTx, q, a3...)
+	if success3 == false {
+		fmt.Print("Deleteing should fail for ID: ")
+		fmt.Println(insertID2)
+	} else {
+		fmt.Println("database insert failed")
+		t.Fail()
+	}
 }
 
 func TestInsertTx(t *testing.T) {
 	db := GetDb()
 	var success = false
-	var q = "INSERT INTO content (title, created_date, text, client_id) VALUES (?, ?, ?, ?)"
+	var q = "INSERT INTO content (title, category, created_date, text, client_id) VALUES (?, ?, ?, ?, ?)"
 	var a []interface{}
-	a = append(a, "test insert with tx", time.Now(), "some content text", 125)
+	a = append(a, "test insert with tx", "pageb", time.Now(), "some content text", 125)
 	//can also be: a := []interface{}{"test insert", time.Now(), "some content text", 125}
 	tx, err := db.Begin()
 	if err != nil {

@@ -216,8 +216,11 @@ func Delete(tx *sql.Tx, query string, args ...interface{}) bool {
 		fmt.Println("Delete Exec err:", err.Error())
 	} else {
 		affectedRows, err := res.RowsAffected()
-		if err != nil && affectedRows == 0 {
+		fmt.Println("affectedRows: ", affectedRows)
+		if err != nil {
 			fmt.Println("Error:", err.Error())
+		} else if affectedRows == 0 {
+			fmt.Println("Error, no records deleted.")
 		} else {
 			fmt.Println("Delete Exec success:")
 			success = true
