@@ -28,11 +28,11 @@ func InitializeMysql(host, user, pw, dbName string) bool {
 	var conStr = user + ":" + pw + "@tcp(" + host + ")/" + dbName
 	db, err = sql.Open("mysql", conStr)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println("Error:", err.Error())
 	}
 	err = db.Ping()
 	if err != nil {
-		panic(err.Error())
+		fmt.Println("Error:", err.Error())
 	} else {
 		rtn = true
 	}
@@ -50,20 +50,20 @@ func Insert(tx *sql.Tx, query string, args ...interface{}) (bool, int64) {
 	var id int64 = -1
 	var stmtIns *sql.Stmt
 	if tx != nil {
-		fmt.Println("Using tx")
+		//fmt.Println("Using tx")
 		stmtIns, err = tx.Prepare(query)
 	} else {
 		stmtIns, err = db.Prepare(query)
 	}
 	if err != nil {
-		panic(err.Error())
+		fmt.Println("Error:", err.Error())
 	}
 	defer stmtIns.Close()
 	res, err := stmtIns.Exec(args...)
 	if err != nil {
 		fmt.Println("Insert Exec err:", err.Error())
 	} else {
-		fmt.Println("Insert Exec success:")
+		//fmt.Println("Insert Exec success:")
 		id, err = res.LastInsertId()
 		if err != nil {
 			fmt.Println("Error:", err.Error())
@@ -79,13 +79,13 @@ func Update(tx *sql.Tx, query string, args ...interface{}) bool {
 	var success = false
 	var stmtUp *sql.Stmt
 	if tx != nil {
-		fmt.Println("Using tx")
+		//fmt.Println("Using tx")
 		stmtUp, err = tx.Prepare(query)
 	} else {
 		stmtUp, err = db.Prepare(query)
 	}
 	if err != nil {
-		panic(err.Error())
+		fmt.Println("Error:", err.Error())
 	}
 	defer stmtUp.Close()
 	res, err := stmtUp.Exec(args...)
@@ -108,7 +108,7 @@ func Get(query string, args ...interface{}) *DbRow {
 	var rtn DbRow
 	stmtGet, err := db.Prepare(query)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println("Error:", err.Error())
 	}
 	defer stmtGet.Close()
 	rows, err := stmtGet.Query(args...)
@@ -119,7 +119,7 @@ func Get(query string, args ...interface{}) *DbRow {
 	} else {
 		columns, err := rows.Columns()
 		if err != nil {
-			panic(err.Error())
+			fmt.Println("Error:", err.Error())
 		}
 		rtn.Columns = columns
 		rowValues := make([]sql.RawBytes, len(columns))
@@ -130,7 +130,7 @@ func Get(query string, args ...interface{}) *DbRow {
 		for rows.Next() {
 			err = rows.Scan(scanArgs...)
 			if err != nil {
-				panic(err.Error())
+				fmt.Println("Error:", err.Error())
 			}
 			for _, col := range rowValues {
 				var value string
@@ -143,7 +143,7 @@ func Get(query string, args ...interface{}) *DbRow {
 			}
 		}
 		if err = rows.Err(); err != nil {
-			panic(err.Error())
+			fmt.Println("Error:", err.Error())
 		}
 	}
 	return &rtn
@@ -154,7 +154,7 @@ func GetList(query string, args ...interface{}) *DbRows {
 	var rtn DbRows
 	stmtGet, err := db.Prepare(query)
 	if err != nil {
-		panic(err.Error())
+		fmt.Println("Error:", err.Error())
 	}
 	defer stmtGet.Close()
 	rows, err := stmtGet.Query(args...)
@@ -165,7 +165,7 @@ func GetList(query string, args ...interface{}) *DbRows {
 	} else {
 		columns, err := rows.Columns()
 		if err != nil {
-			panic(err.Error())
+			fmt.Println("Error:", err.Error())
 		}
 		rtn.Columns = columns
 		rowValues := make([]sql.RawBytes, len(columns))
@@ -177,7 +177,7 @@ func GetList(query string, args ...interface{}) *DbRows {
 			var rowValuesStr []string
 			err = rows.Scan(scanArgs...)
 			if err != nil {
-				panic(err.Error())
+				fmt.Println("Error:", err.Error())
 			}
 			for _, col := range rowValues {
 				var value string
@@ -191,7 +191,7 @@ func GetList(query string, args ...interface{}) *DbRows {
 			rtn.Rows = append(rtn.Rows, rowValuesStr)
 		}
 		if err = rows.Err(); err != nil {
-			panic(err.Error())
+			fmt.Println("Error:", err.Error())
 		}
 	}
 	return &rtn
@@ -202,13 +202,13 @@ func Delete(tx *sql.Tx, query string, args ...interface{}) bool {
 	var success = false
 	var stmt *sql.Stmt
 	if tx != nil {
-		fmt.Println("Using tx")
+		//fmt.Println("Using tx")
 		stmt, err = tx.Prepare(query)
 	} else {
 		stmt, err = db.Prepare(query)
 	}
 	if err != nil {
-		panic(err.Error())
+		fmt.Println("Error:", err.Error())
 	}
 	defer stmt.Close()
 	res, err := stmt.Exec(args...)
@@ -216,14 +216,14 @@ func Delete(tx *sql.Tx, query string, args ...interface{}) bool {
 		fmt.Println("Delete Exec err:", err.Error())
 	} else {
 		affectedRows, err := res.RowsAffected()
-		fmt.Println("affectedRows: ", affectedRows)
+		//fmt.Println("affectedRows: ", affectedRows)
 		if err != nil {
 			fmt.Println("Error:", err.Error())
-		} else if affectedRows == 0 {
-			fmt.Println("Error, no records deleted.")
 		} else {
-			fmt.Println("Delete Exec success:")
-			success = true
+			//fmt.Println("Delete Exec success:")
+			if affectedRows > 0 {
+				success = true
+			}
 		}
 	}
 	return success
